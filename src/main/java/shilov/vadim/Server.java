@@ -4,19 +4,21 @@ import shilov.vadim.history.CircularListHistory;
 import shilov.vadim.history.History;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentSkipListSet;
 
 /**
  * Created by vadim on 16.08.16.
  */
 public abstract class Server {
 
-    private Set<Connection> connectionSet;
+    private ConcurrentHashMap<Connection,String> connectionSet;
     private Set<String> clientNameSet;
     private History history;
 
     public Server(){
         clientNameSet=new HashSet<>();
-        connectionSet=new HashSet<>();
+        connectionSet=new ConcurrentHashMap<>();
         history=new CircularListHistory();
     }
 
@@ -51,7 +53,7 @@ public abstract class Server {
         if(clientNameSet.contains(name))return false;
         broadcastSend(name+ "зашел в чат");
         clientNameSet.add(name);
-        connectionSet.add(source);
+        connectionSet.put(source,name);
         sendHistoryToClient(source);
         return true;
     }
@@ -82,10 +84,27 @@ public abstract class Server {
         connection.send(historyString.toString());
     }
 
-    private void broadcastSend(String message){
-        for(Connection connection:connectionSet){
-            connection.send(message);
+    class BroadcastSender extends Thread{
+
+        private String message;
+
+        public BroadcastSender(String message){
+            this.message=message;
         }
+
+        public void run(){
+            for(Connection connection:connectionSet.keySet()){
+                connection.send(message);
+            }
+        }
+
+    }
+
+    private void broadcastSend(String message){
+//        for(Connection connection:connectionSet){
+//            connection.send(message);
+//        }
+        new BroadcastSender(message).start();
     }
 
     /**
