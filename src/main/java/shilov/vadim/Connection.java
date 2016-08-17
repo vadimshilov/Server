@@ -30,36 +30,42 @@ public abstract class Connection extends Thread {
      */
     protected abstract String receiveData();
 
-    private void receiveName(){
+    //возвращаем false, если не удалось получить ответ от клиента
+    private boolean receiveName(){
         send("Введите имя");
         boolean nameAccepted=false;
         while(isConnected()&&!nameAccepted){
-            clientName = null;
-            do{
-                clientName=receiveData();
-            }while (clientName==null&&isConnected());
-            nameAccepted=server.nameReceived(this);
-            if(!nameAccepted){
-                send("Введенное имя занято. Введите другое");
+            clientName = receiveData();
+            if(clientName!=null) {
+                nameAccepted = server.nameReceived(this);
+                if (!nameAccepted) {
+                    send("Введенное имя занято. Введите другое");
+                } else {
+                    send("Добро пожаловть в чат, " + clientName + "!");
+                }
             }
-            else{
-                send("Добро пожаловть в чат, "+clientName+"!");
-            }
+            else
+                return false;
         }
+        return true;
     }
 
     private void waitForMessage(){
-        while(isConnected()) {
-            String message = receiveData();
+        String message=null;
+        do {
+            message = receiveData();
             if(message!=null)
                 server.messageReceived(this,message);
-        }
+            else
+                break;
+        } while(isConnected()&&message!=null);
     }
 
     public void run(){
-        receiveName();
-        waitForMessage();
-        server.clientDisconnected(this);
+        if(receiveName()) {
+            waitForMessage();
+            server.clientDisconnected(this);
+        }
     }
 
     public String getClientName(){

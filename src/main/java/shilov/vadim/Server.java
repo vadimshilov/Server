@@ -1,5 +1,8 @@
 package shilov.vadim;
 
+import shilov.vadim.history.CircularListHistory;
+import shilov.vadim.history.History;
+
 import java.util.*;
 
 /**
@@ -9,10 +12,12 @@ public abstract class Server {
 
     private Set<Connection> connectionSet;
     private Set<String> clientNameSet;
+    private History history;
 
     public Server(){
         clientNameSet=new HashSet<>();
         connectionSet=new HashSet<>();
+        history=new CircularListHistory();
     }
 
     /**
@@ -47,6 +52,7 @@ public abstract class Server {
         broadcastSend(name+ "зашел в чат");
         clientNameSet.add(name);
         connectionSet.add(source);
+        sendHistoryToClient(source);
         return true;
     }
 
@@ -58,8 +64,22 @@ public abstract class Server {
     public synchronized void messageReceived(Connection source,String message){
         //добавляем к тексту сообщения имя отправителя и дату
         message=source.getClientName()+" ["+new Date(System.currentTimeMillis()).toString()+" ] >"+message;
-        System.out.println(message);
+//        System.out.println(message);
+        history.newMessage(message);
+        long start=System.currentTimeMillis();
         broadcastSend(message);
+        long end=System.currentTimeMillis();
+        System.err.println(end-start);
+    }
+
+    private void sendHistoryToClient(Connection connection){
+        String[] messages=history.getLastMessages();
+        StringBuilder historyString=new StringBuilder();
+        for(String str:messages){
+            historyString.append(str);
+            historyString.append("\r\n");
+        }
+        connection.send(historyString.toString());
     }
 
     private void broadcastSend(String message){
