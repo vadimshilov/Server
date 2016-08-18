@@ -1,4 +1,4 @@
-package shilov.vadim;
+package shilov.vadim.history;
 
 /**
  * Created by vadim on 16.08.16.
