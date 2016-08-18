@@ -38,10 +38,9 @@
             <resources>
               <resource>
                 <directory>${basedir}</directory>
+
                 <includes>
                   <include>config.properties</include>
-                </includes>
-                <includes>
                   <include>run*</include>
                 </includes>
 
