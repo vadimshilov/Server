@@ -19,7 +19,7 @@ public class TcpConnection extends Connection {
     private PrintWriter out;
 
     @Override
-    public void send(String message) {
+    public synchronized void send(String message) {
         out.println(message);
     }
 
