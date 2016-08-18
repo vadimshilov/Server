@@ -10,7 +10,51 @@
 
   <name>Server</name>
   <url>http://maven.apache.org</url>
+  <build>
+  <plugins>
+    <plugin>
+      <groupId>org.apache.maven.plugins</groupId>
+      <artifactId>maven-jar-plugin</artifactId>
+      <configuration>
+        <archive>
+          <manifest>
+            <mainClass>shilov.vadim.App</mainClass>
+          </manifest>
+        </archive>
+      </configuration>
+    </plugin>
 
+    <plugin>
+      <artifactId>maven-resources-plugin</artifactId>
+      <executions>
+        <execution>
+          <id>copy-resources</id>
+          <phase>validate</phase>
+          <goals>
+            <goal>copy-resources</goal>
+          </goals>
+          <configuration>
+            <outputDirectory>${basedir}/target</outputDirectory>
+            <resources>
+              <resource>
+                <directory>${basedir}</directory>
+
+                <includes>
+                  <include>config.properties</include>
+                  <include>run*</include>
+                </includes>
+
+                <filtering>true</filtering>
+              </resource>
+            </resources>
+          </configuration>
+        </execution>
+      </executions>
+    </plugin>
+
+  </plugins>
+
+  </build>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.target>1.8</maven.compiler.target>
@@ -28,6 +72,7 @@
       <groupId>org.mockito</groupId>
       <artifactId>mockito-core</artifactId>
       <version>1.10.19</version>
+      <scope>test</scope>
     </dependency>
   </dependencies>
 </project>
